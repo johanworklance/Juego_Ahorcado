@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ahorcado</title>
+    <style>
+        div{
+            position: absolute;
+            float: left;
+        }
+        canvas{
+            display: block;
+            margin: 0 auto;
+            
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Juego del Ahorcado</h1>
+        <p>Introduzca una palabra</p><br>
+        <input type="text" name="letra" id="letra">
+        
+        <input type="submit" value="Enviar" id="boton">
+        <br>
+        <h2 id="pista"></h2>
+        <h3 id="result"></h3>
+    </div>
+    
+    <canvas id="canvas"></canvas>
+    <script>
+         class Ahorcado{
+            constructor(con){
+                this.contexto= con;
+                this.maximo=5;
+                this.intentos=0;
+                this.vivo=true;
+                this.dibujar();
+            }
+            dibujar(){
+                let dibujo = this.contexto;
+                //dibujando el poste
+                dibujo.beginPath();
+                dibujo.moveTo(150,100);
+                dibujo.lineTo(150,50);
+                dibujo.lineTo(400,50);
+                dibujo.lineTo(400,350);
+                dibujo.strokeStyle="#000";
+                dibujo.lineWidth=10;
+                dibujo.stroke();
+                dibujo.closePath();
+                if(this.intentos>0){
+                    //intentos = 1 rostro
+                    dibujo.beginPath();
+                    //x, y, radio, inicio del angulo 0 grados aqui, fin del angulo 2 veces PI= 360
+                    dibujo.arc(150,140,40,0,Math.PI*2);
+                    dibujo.strokeStyle="#f00";
+                    dibujo.lineWidth=5;
+                    dibujo.stroke();
+                    dibujo.closePath();
+                    if(this.intentos>1){
+                        //intentos=2 torso
+                        dibujo.beginPath();
+                        dibujo.moveTo(150,180);
+                        dibujo.lineTo(150,250);
+                        dibujo.strokeStyle="#f00";
+                        dibujo.lineWidth=5;
+                        dibujo.stroke();
+                        dibujo.closePath();
+                        if(this.intentos>2){
+                            //intentos=3 brazos
+                            dibujo.beginPath();
+                            dibujo.moveTo(120,220);
+                            dibujo.lineTo(150,180);
+                            dibujo.lineTo(180,220);
+                            dibujo.strokeStyle="#f00";
+                            dibujo.lineWidth=5;
+                            dibujo.stroke();
+                            dibujo.closePath();
+                            if(this.intentos>3){
+                                //intentos=4 piernas
+                                dibujo.beginPath();
+                                dibujo.moveTo(120,290);
+                                dibujo.lineTo(150,250);
+                                dibujo.lineTo(180,290);
+                                dibujo.strokeStyle="#f00";
+                                dibujo.lineWidth=5;
+                                dibujo.stroke();
+                                dibujo.closePath();
+                                if(this.intentos>4){
+                                    //intentos=5 ojos
+                                    dibujo.beginPath();
+                                    //ojo izquierdo
+                                    //hacia abajo
+                                    dibujo.moveTo(125,120);
+                                    dibujo.lineTo(145,145);
+                                    //hacia arriba
+                                    dibujo.moveTo(125,145);
+                                    dibujo.lineTo(145,120);
+
+                                    //ojo derecho
+                                    //hacia abajo
+                                    dibujo.moveTo(155,120);
+                                    dibujo.lineTo(175,145);
+                                    //hacia arriba
+                                    dibujo.moveTo(155,145);
+                                    dibujo.lineTo(175,120);
+
+                                    
+                                    dibujo.strokeStyle="#00F";
+                                    dibujo.lineWidth=5;
+                                    dibujo.stroke();
+                                    dibujo.closePath();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            trazar(){/* cada vez que se falle adivinando una letra de la palabra trazamos 
+                una parte del cuerpo del ahorcado, y aumentaremos el valor de los intentos */
+                this.intentos++;
+                if(this.intentos==this.maximo){
+                    this.vivo=false;
+                    letra.style= "display:none";
+                    boton.style="display:none";
+
+                    resultado.innerHTML= "Perdiste :(";
+                }
+                this.dibujar();//redibujamos
+            }
+        }
+        /*let palabras= new Array();
+
+        palabras[0]="sol";
+        palabras[1]="luna";
+        palabras[2]="larva";
+        palabras[3]="girasol";
+        palabras[4]="violeta";
+
+        //Math.floor(Math.random() * (max - min)) + min;
+
+        palabra= palabras[Math.floor(Math.random() * 5)];*/
+        let palabra= "madera";
+
+        let letra= document.getElementById("letra");
+        
+        let c= document.getElementById("canvas");
+        c.width=500;
+        c.height=400;
+        c.style= "border:1px solid black";
+        let lienzo= c.getContext("2d");
+        let boton= document.getElementById("boton");
+        let resultado= document.getElementById("result");
+        let hombre= new Ahorcado(lienzo);
+        let espacio= new Array(palabra.length);
+
+        boton.addEventListener("click",agregarLetra);
+
+        mostrarPista(espacio);
+
+        function agregarLetra(){
+            let letraTemporal= letra.value.toLowerCase();
+            letra.value="";
+            mostrarPalabra(palabra,hombre,letraTemporal);
+        }
+
+        function mostrarPalabra(palabra,ahorcado,letraEvaluar){
+            let encontrado= false;
+            let palabraEnteraEncontrada= "";
+            
+            for (i in palabra) {
+                if(letraEvaluar==palabra[i]){
+                    espacio[i]=letraEvaluar;
+                    
+                    encontrado= true;     
+                }
+                if(espacio[i]!=undefined){
+                    palabraEnteraEncontrada+= espacio[i];
+                }
+                
+            }
+
+            if(!encontrado){
+                hombre.trazar();
+            }
+            
+            
+            if(palabraEnteraEncontrada==palabra){
+                letra.style= "display:none";
+                boton.style="display:none";
+                resultado.innerHTML= "Ganaste! :)";
+            }
+            mostrarPista(espacio);
+        }
+
+        function mostrarPista(espacio){
+            let pista= document.getElementById("pista");
+            let texto="";
+            let largo= espacio.length;
+            for (i = 0; i<largo; i++) {
+                if(espacio[i]!=undefined){
+                    texto += `${espacio[i]} `;
+                }else{
+                    texto +="_ ";
+                }
+            }
+            if(hombre.vivo){
+                pista.innerText= texto;
+            }else{
+                pista.innerText=palabra;
+            }
+            
+        }
+
+
+       
+
+        
+        
+    </script>
+</body>
+</html>
